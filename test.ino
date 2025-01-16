@@ -27,7 +27,7 @@ void read_dht() {
 
 void read_photoresistor() {
   int value = analogRead(PHOTORESISTOR_PIN);
-  Serial.print("Photoresistor value: ");
+  Serial.print("[Photoresistor]: Photoresistor value: ");
   Serial.println(value);
 }
 
