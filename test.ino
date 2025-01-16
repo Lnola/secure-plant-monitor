@@ -1,11 +1,11 @@
 #include <Ticker.h>
 #include "dhtnew.h"
 
-#define DHTPIN D7
+#define DHT_PIN D7
 #define PHOTORESISTOR_PIN A0
 #define FLAME_PIN D5
 
-DHTNEW dht(DHTPIN);
+DHTNEW dht(DHT_PIN);
 
 Ticker dhtTicker;
 Ticker photoresistorTicker;
