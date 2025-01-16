@@ -3,6 +3,10 @@
 #include <PubSubClient.h>
 
 const bool SILENCE_SENSOR_LOGS = 1;
+const char* TEMPERATURE_TOPIC = "lnola/sensor/temperature";
+const char* HUMIDITY_TOPIC = "lnola/sensor/humidity";
+const char* PHOTORESISTOR_TOPIC = "lnola/sensor/light-level";
+const char* FLAME_TOPIC = "lnola/sensor/flame";
 
 const char* WIFI_SSID = "Ferrotel";
 const char* WIFI_PASSWORD = "ferrotel2018";
@@ -80,6 +84,14 @@ void read_dht() {
     Serial.println("%");
   }
 
+  char temperaturePayload[10];
+  char humidityPayload[10];
+  snprintf(temperaturePayload, sizeof(temperaturePayload), "%.0f", temperature);
+  snprintf(humidityPayload, sizeof(humidityPayload), "%.0f", humidity);
+
+  mqtt.publish(TEMPERATURE_TOPIC, temperaturePayload);
+  mqtt.publish(HUMIDITY_TOPIC, humidityPayload);
+
   dhtReady = false;
 }
 
@@ -90,13 +102,16 @@ void read_photoresistor() {
     Serial.println(value);
   }
 
+  char payload[10];
+  snprintf(payload, sizeof(payload), "%d", value);
+  mqtt.publish(PHOTORESISTOR_TOPIC, payload);
+
   photoresistorReady = false;
 }
 
 void read_flame() {
   int value = digitalRead(FLAME_PIN);
   if (!SILENCE_SENSOR_LOGS) {
-
     Serial.print("[Flame]: Value: ");
     Serial.println(value);
   }
@@ -106,6 +121,10 @@ void read_flame() {
   } else {
     noTone(BUZZER_PIN);
   }
+
+  char payload[10];
+  snprintf(payload, sizeof(payload), "%d", value);
+  mqtt.publish(FLAME_TOPIC, payload);
 
   flameReady = false;
 }
@@ -125,9 +144,9 @@ void setup() {
   pinMode(BUZZER_PIN, OUTPUT);
 
   // SENSOR TICKER setup
-  dhtTicker.attach(1, set_dht_ready);
-  photoresistorTicker.attach(1, set_photoresistor_ready);
-  flameTicker.attach(1, set_flame_ready);
+  dhtTicker.attach(2, set_dht_ready);
+  photoresistorTicker.attach(0.5, set_photoresistor_ready);
+  flameTicker.attach(0.5, set_flame_ready);
 }
 
 void loop() {
