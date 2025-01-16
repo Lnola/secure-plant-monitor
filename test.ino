@@ -33,12 +33,16 @@ void read_dht() {
   Serial.print("°C, Humidity: ");
   Serial.print(humidity);
   Serial.println("%");
+
+  dhtReady = false;
 }
 
 void read_photoresistor() {
   int value = analogRead(PHOTORESISTOR_PIN);
-  Serial.print("[Photoresistor]: Photoresistor value: ");
+  Serial.print("[Photoresistor]: Value: ");
   Serial.println(value);
+
+  photoresistorReady = false;
 }
 
 void setup() {
@@ -49,13 +53,6 @@ void setup() {
 }
 
 void loop() {
-  if (dhtReady) {
-    dhtReady = false;
-    read_dht();
-  }
-
-  if (photoresistorReady) {
-    photoresistorReady = false;
-    read_photoresistor();
-  }
+  if (dhtReady) read_dht();
+  if (photoresistorReady) read_photoresistor();
 }
