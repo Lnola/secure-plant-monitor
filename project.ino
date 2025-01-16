@@ -2,6 +2,8 @@
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 
+const bool SILENCE_SENSOR_LOGS = 1;
+
 const char* WIFI_SSID = "Ferrotel";
 const char* WIFI_PASSWORD = "ferrotel2018";
 const char* MQTT_SERVER = "broker.hivemq.com";
@@ -70,27 +72,34 @@ void read_dht() {
   float temperature = dht.getTemperature();
   float humidity = dht.getHumidity();
 
-  Serial.print("[DHT]: Temperature: ");
-  Serial.print(temperature);
-  Serial.print("°C, Humidity: ");
-  Serial.print(humidity);
-  Serial.println("%");
+  if (!SILENCE_SENSOR_LOGS) {
+    Serial.print("[DHT]: Temperature: ");
+    Serial.print(temperature);
+    Serial.print("°C, Humidity: ");
+    Serial.print(humidity);
+    Serial.println("%");
+  }
 
   dhtReady = false;
 }
 
 void read_photoresistor() {
   int value = analogRead(PHOTORESISTOR_PIN);
-  Serial.print("[Photoresistor]: Value: ");
-  Serial.println(value);
+  if (!SILENCE_SENSOR_LOGS) {
+    Serial.print("[Photoresistor]: Value: ");
+    Serial.println(value);
+  }
 
   photoresistorReady = false;
 }
 
 void read_flame() {
   int value = digitalRead(FLAME_PIN);
-  Serial.print("[Flame]: Value: ");
-  Serial.println(value);
+  if (!SILENCE_SENSOR_LOGS) {
+
+    Serial.print("[Flame]: Value: ");
+    Serial.println(value);
+  }
 
   if (value == HIGH) {
     tone(BUZZER_PIN, 1000);
