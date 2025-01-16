@@ -4,6 +4,7 @@
 #define DHT_PIN D7
 #define PHOTORESISTOR_PIN A0
 #define FLAME_PIN D5
+#define BUZZER_PIN D6
 
 DHTNEW dht(DHT_PIN);
 
@@ -57,6 +58,12 @@ void read_flame() {
   Serial.print("[Flame]: Value: ");
   Serial.println(value);
 
+  if (value == HIGH) {
+    tone(BUZZER_PIN, 1000);
+  } else {
+    noTone(BUZZER_PIN);
+  }
+
   flameReady = false;
 }
 
@@ -64,6 +71,7 @@ void setup() {
   Serial.begin(9600);
 
   pinMode(FLAME_PIN, INPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
 
   dhtTicker.attach(1, set_dht_ready);
   photoresistorTicker.attach(1, set_photoresistor_ready);
