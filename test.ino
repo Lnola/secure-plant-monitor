@@ -2,10 +2,9 @@
 #include "dhtnew.h"
 
 #define DHTPIN D7
+#define PHOTORESISTOR_PIN A0
 
 DHTNEW dht(DHTPIN);
-
-const int photoresistorPin = A0;
 
 Ticker dhtTicker;
 Ticker photoresistorTicker;
@@ -27,16 +26,16 @@ void read_dht() {
 }
 
 void read_photoresistor() {
-  int val = analogRead(photoresistorPin);
+  int value = analogRead(PHOTORESISTOR_PIN);
   Serial.print("Photoresistor value: ");
-  Serial.println(val);
+  Serial.println(value);
 }
 
 void setup() {
   Serial.begin(9600);
 
   dhtTicker.attach(1, read_dht);
-  photoresistorTicker.attach(0.1, read_photoresistor);
+  photoresistorTicker.attach(1, read_photoresistor);
 }
 
 void loop() {
