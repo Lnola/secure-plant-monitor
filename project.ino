@@ -7,8 +7,8 @@ const char* WIFI_PASSWORD = "ferrotel2018";
 const char* MQTT_SERVER = "broker.hivemq.com";
 const int MQTT_PORT = 8883;
 
-WiFiClientSecure espClient;
-PubSubClient client(espClient);
+WiFiClientSecure wifiClient;
+PubSubClient mqtt(wifiClient);
 
 void setup_wifi() {
   Serial.print("Connecting to WiFi...");
@@ -21,12 +21,12 @@ void setup_wifi() {
 }
 
 void reconnect() {
-  while (!client.connected()) {
-    if (client.connect("ESP8266Client")) {
+  while (!mqtt.connected()) {
+    if (mqtt.connect("ESP8266Client")) {
       Serial.println("MQTT connected");
     } else {
       Serial.print("MQTT connection failed, rc=");
-      Serial.println(client.state());
+      Serial.println(mqtt.state());
       delay(5000);
     }
   }
@@ -37,13 +37,13 @@ void setup() {
 
   // WiFi setup
   setup_wifi();
-  espClient.setInsecure();  // Disable certificate verification (insecure, for testing purposes only)
+  wifiClient.setInsecure();  // Disable certificate verification (insecure, for testing purposes only)
 
   // MQTT setup
-  client.setServer(MQTT_SERVER, MQTT_PORT);
+  mqtt.setServer(MQTT_SERVER, MQTT_PORT);
 }
 
 void loop() {
-  if (!client.connected()) reconnect();
-  client.loop();
+  if (!mqtt.connected()) reconnect();
+  mqtt.loop();
 }
