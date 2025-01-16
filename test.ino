@@ -6,23 +6,24 @@
 
 DHTNEW dht(DHTPIN);
 
-Ticker dhtTicker;
 Ticker photoresistorTicker;
 
-
 void read_dht() {
-  if (dht.read()) {
-    float temperature = dht.getTemperature();
-    float humidity = dht.getHumidity();
-
-    Serial.print("[DHT]: Temperature: ");
-    Serial.print(temperature);
-    Serial.print("°C, Humidity: ");
-    Serial.print(humidity);
-    Serial.println("%");
-  } else {
+  if (millis() - dht.lastRead() < 2000) return;
+  if (!dht.read()) {
     Serial.println("[DHT]: Sensor not ready or failed to read");
+    Serial.println(dht.getTemperature());
+    Serial.println(dht.getHumidity());
+    return;
   }
+  float temperature = dht.getTemperature();
+  float humidity = dht.getHumidity();
+
+  Serial.print("[DHT]: Temperature: ");
+  Serial.print(temperature);
+  Serial.print("°C, Humidity: ");
+  Serial.print(humidity);
+  Serial.println("%");
 }
 
 void read_photoresistor() {
@@ -34,9 +35,9 @@ void read_photoresistor() {
 void setup() {
   Serial.begin(9600);
 
-  dhtTicker.attach(1, read_dht);
-  photoresistorTicker.attach(1, read_photoresistor);
+  // photoresistorTicker.attach(1, read_photoresistor);
 }
 
 void loop() {
+  read_dht();
 }
