@@ -2,20 +2,7 @@
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 #include <LittleFS.h>
-
 #include <time.h>
-
-void configureTime() {
-  configTime(0, 0, "pool.ntp.org", "time.nist.gov");
-
-  Serial.print("Waiting for time sync...");
-  while (time(nullptr) < 100000) {
-    Serial.print(".");
-    delay(1000);
-  }
-
-  Serial.println("Time synchronized!");
-}
 
 const bool SILENCE_SENSOR_LOGS = 1;
 const char* TEMPERATURE_TOPIC = "lnola/sensor/temperature";
@@ -41,13 +28,22 @@ void setup_wifi() {
   Serial.println("\nWiFi connected!");
 }
 
-void loadCertificates() {
+void configure_time() {
+  configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+  Serial.print("Waiting for time sync...");
+  while (time(nullptr) < 100000) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nTime synchronized!");
+}
+
+void load_certificates() {
   if (!LittleFS.begin()) {
     Serial.println("Failed to mount LittleFS.");
     return;
   }
 
-  // Load CA Certificate
   File caCertFile = LittleFS.open("/ca.crt", "r");
   if (!caCertFile) {
     Serial.println("Failed to open CA certificate file.");
@@ -57,7 +53,6 @@ void loadCertificates() {
   caCertFile.close();
   wifiClient.setTrustAnchors(new BearSSL::X509List(caCert.c_str()));
 
-  // Load Client Certificate
   File clientCertFile = LittleFS.open("/client.crt", "r");
   if (!clientCertFile) {
     Serial.println("Failed to open client certificate file.");
@@ -66,7 +61,6 @@ void loadCertificates() {
   String clientCert = clientCertFile.readString();
   clientCertFile.close();
 
-  // Load Client Private Key
   File clientKeyFile = LittleFS.open("/client.key", "r");
   if (!clientKeyFile) {
     Serial.println("Failed to open client private key file.");
@@ -75,7 +69,6 @@ void loadCertificates() {
   String clientKey = clientKeyFile.readString();
   clientKeyFile.close();
 
-  // Configure the client with the certificates and key
   wifiClient.setClientRSACert(new BearSSL::X509List(clientCert.c_str()),
                               new BearSSL::PrivateKey(clientKey.c_str()));
 
@@ -190,8 +183,8 @@ void setup() {
 
   // WiFi setup
   setup_wifi();
-  configureTime();
-  loadCertificates();
+  configure_time();
+  load_certificates();
 
   // MQTT setup
   mqtt.setServer(MQTT_SERVER, MQTT_PORT);
