@@ -1,6 +1,21 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
+#include <LittleFS.h>
+
+#include <time.h>
+
+void configureTime() {
+  configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+
+  Serial.print("Waiting for time sync...");
+  while (time(nullptr) < 100000) {
+    Serial.print(".");
+    delay(1000);
+  }
+
+  Serial.println("Time synchronized!");
+}
 
 const bool SILENCE_SENSOR_LOGS = 1;
 const char* TEMPERATURE_TOPIC = "lnola/sensor/temperature";
@@ -10,7 +25,7 @@ const char* FLAME_TOPIC = "lnola/sensor/flame";
 
 const char* WIFI_SSID = "Ferrotel";
 const char* WIFI_PASSWORD = "ferrotel2018";
-const char* MQTT_SERVER = "broker.hivemq.com";
+const char* MQTT_SERVER = "188.245.235.247";
 const int MQTT_PORT = 8883;
 
 WiFiClientSecure wifiClient;
@@ -24,6 +39,47 @@ void setup_wifi() {
     Serial.print(".");
   }
   Serial.println("\nWiFi connected!");
+}
+
+void loadCertificates() {
+  if (!LittleFS.begin()) {
+    Serial.println("Failed to mount LittleFS.");
+    return;
+  }
+
+  // Load CA Certificate
+  File caCertFile = LittleFS.open("/ca.crt", "r");
+  if (!caCertFile) {
+    Serial.println("Failed to open CA certificate file.");
+    return;
+  }
+  String caCert = caCertFile.readString();
+  caCertFile.close();
+  wifiClient.setTrustAnchors(new BearSSL::X509List(caCert.c_str()));
+
+  // Load Client Certificate
+  File clientCertFile = LittleFS.open("/client.crt", "r");
+  if (!clientCertFile) {
+    Serial.println("Failed to open client certificate file.");
+    return;
+  }
+  String clientCert = clientCertFile.readString();
+  clientCertFile.close();
+
+  // Load Client Private Key
+  File clientKeyFile = LittleFS.open("/client.key", "r");
+  if (!clientKeyFile) {
+    Serial.println("Failed to open client private key file.");
+    return;
+  }
+  String clientKey = clientKeyFile.readString();
+  clientKeyFile.close();
+
+  // Configure the client with the certificates and key
+  wifiClient.setClientRSACert(new BearSSL::X509List(clientCert.c_str()),
+                              new BearSSL::PrivateKey(clientKey.c_str()));
+
+  Serial.println("Certificates loaded successfully.");
 }
 
 void reconnect() {
@@ -134,7 +190,8 @@ void setup() {
 
   // WiFi setup
   setup_wifi();
-  wifiClient.setInsecure();  // Disable certificate verification (insecure, for testing purposes only)
+  configureTime();
+  loadCertificates();
 
   // MQTT setup
   mqtt.setServer(MQTT_SERVER, MQTT_PORT);
