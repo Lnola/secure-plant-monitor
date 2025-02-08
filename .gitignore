@@ -1,2 +1,4 @@
-/data
+/data/ca.crt
+/data/client.crt
+/data/client.key
 .DS_Store
