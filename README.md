@@ -1,6 +1,6 @@
 # Secure Plant Monitor
 
-Secure Plant Monitor is an IoT project designed to monitor environmental conditions such as temperature, humidity, light levels, and the presence of open flames. It focuses on the security of the system. It securely transmits this data using MQTT with TLS encryption, ensuring data integrity and privacy.
+Secure Plant Monitor is an IoT project designed to monitor environmental conditions such as temperature, humidity, light levels, and the presence of open flames. It focuses on the **security** of the system. It **securely transmits this data** using **MQTT** with **TLS encryption**, ensuring **data integrity** and **privacy**.
 
 ## Features
 
